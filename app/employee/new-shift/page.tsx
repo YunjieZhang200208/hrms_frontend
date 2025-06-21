@@ -1,3 +1,4 @@
+// EmployeeNewShiftPage.tsx
 'use client';
 
 import {
@@ -5,182 +6,173 @@ import {
   Container,
   Group,
   Paper,
-  Select,
   Stack,
   Text,
-  TextInput,
   Title,
 } from '@mantine/core';
-import { TimeInput } from '@mantine/dates';
-import { useForm } from '@mantine/form';
-import { IconPlus } from '@tabler/icons-react';
+import { IconEdit, IconPlus } from '@tabler/icons-react';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import { useEffect, useState } from 'react';
 import { useUser } from '@/lib/UserContext';
+import ShiftForm from '@/components/ShiftForm/ShiftForm';
+import '@mantine/dates/styles.css';
 
-const ShiftForm = ({ onChange, onRemove }: any) => {
-  const form = useForm({
-    initialValues: {
-      type: 'norm',
-      startTime: dayjs().startOf('hour').format('HH:mm'),
-      endTime: dayjs().startOf('hour').add(1, 'hour').format('HH:mm'),
-      tipsCash: '',
-      tipsCard: '',
-      sales: '',
-    },
-  });
+dayjs.extend(utc);
+dayjs.extend(timezone);
+const TORONTO = 'America/Toronto';
 
-  const handleChange = () => {
-    const { type, startTime, endTime, tipsCash, tipsCard, sales } = form.values;
-    onChange({ type, startTime, endTime, tipsCash, tipsCard, sales });
+export default function EmployeeNewShiftPage() {
+  const user = useUser();
+  const today = dayjs().format('YYYY-MM-DD');
+  const [shiftForms, setShiftForms] = useState<any[]>([]);
+  const [existingShifts, setExistingShifts] = useState<any[]>([]);
+  const [editingShiftId, setEditingShiftId] = useState<string | null>(null);
+
+  const parseOptionalFloat = (val: string) =>
+    val === undefined || val === null || val.trim() === '' ? undefined : parseFloat(val);
+
+  const fetchShifts = async () => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/shifts?where[start][greater_than_equal]=${today}T00:00:00.000&where[start][less_than_equal]=${today}T23:59:59.999&where[employee][equals]=${user?.id}`,
+      { credentials: 'include' }
+    );
+    const json = await res.json();
+    setExistingShifts(json.docs || []);
+    setShiftForms([]);
+    setEditingShiftId(null);
   };
 
-  return (
-    <Paper withBorder p="md" radius="md" mt="sm">
-      <Stack>
-        <Text>Date: {dayjs().format('YYYY-MM-DD')}</Text>
-        <Select
-          label="Shift Type"
-          data={[
-            { label: 'Norm Shift', value: 'norm' },
-            { label: 'Server Shift', value: 'server' },
-          ]}
-          {...form.getInputProps('type')}
-          onChange={(value) => {
-            form.setFieldValue('type', value!);
-            handleChange();
-          }}
-        />
-        <TimeInput
-          label="Start Time"
-          value={form.values.startTime}
-          onChange={(event) => {
-            form.setFieldValue('startTime', event.currentTarget.value);
-            handleChange();
-          }}
-        />
-        <TimeInput
-          label="End Time"
-          value={form.values.endTime}
-          onChange={(event) => {
-            form.setFieldValue('endTime', event.currentTarget.value);
-            handleChange();
-          }}
-        />
-        {form.values.type === 'server' && (
-          <>
-            <TextInput
-              label="Sales"
-              type="number"
-              step="0.01"
-              {...form.getInputProps('sales')}
-              onChange={(e) => {
-                form.setFieldValue('sales', e.currentTarget.value);
-                handleChange();
-              }}
-            />
-            <TextInput
-              label="Tips (Cash)"
-              type="number"
-              step="0.01"
-              {...form.getInputProps('tipsCash')}
-              onChange={(e) => {
-                form.setFieldValue('tipsCash', e.currentTarget.value);
-                handleChange();
-              }}
-            />
-            <TextInput
-              label="Tips (Card)"
-              type="number"
-              step="0.01"
-              {...form.getInputProps('tipsCard')}
-              onChange={(e) => {
-                form.setFieldValue('tipsCard', e.currentTarget.value);
-                handleChange();
-              }}
-            />
-          </>
-        )}
-        {onRemove && (
-          <Button variant="outline" color="red" onClick={onRemove}>
-            Remove
-          </Button>
-        )}
-      </Stack>
-    </Paper>
-  );
-};
+  useEffect(() => {
+    if (user?.id) {
+      fetchShifts();
+    }
+  }, [user]);
 
-export default function NewShiftPage() {
-  const user = useUser(); // ✅ Grab user from context
-  const [shifts, setShifts] = useState<any[]>([{ id: Date.now(), data: {} }]);
-
-  const updateShift = (index: number, data: any) => {
-    setShifts((prev) => {
+  const updateForm = (index: number, data: any) => {
+    setShiftForms((prev) => {
       const copy = [...prev];
       copy[index].data = data;
       return copy;
     });
   };
 
-  const addShift = () => {
-    setShifts((prev) => [...prev, { id: Date.now(), data: {} }]);
-  };
-
-  const removeShift = (index: number) => {
-    setShifts((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmitAll = async () => {
-    const today = dayjs().format('YYYY-MM-DD');
-
-    const shiftPayloads = shifts.map((s) => ({
-      type: s.data.type || 'norm',
-      employee: user?.id,
-      restaurant: (user as any)?.restaurant?.id || (user as any)?.restaurant,
-      start: `${today}T${s.data.startTime || '00:00'}:00.000Z`,
-      end: `${today}T${s.data.endTime || '00:00'}:00.000Z`,
-      tipsCash: s.data.tipsCash ? parseFloat(s.data.tipsCash) : undefined,
-      tipsCard: s.data.tipsCard ? parseFloat(s.data.tipsCard) : undefined,
-      sales: s.data.sales ? parseFloat(s.data.sales) : undefined,
-    }));
-
-    for (const payload of shiftPayloads) {
-        console.log('Submitting shift:', payload);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shifts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        console.error('Failed to submit shift:', error);
-      }
-    }
-
-    setShifts([{ id: Date.now(), data: {} }]);
-  };
-
   return (
     <Container size="sm" mt="xl">
-      <Title order={2} mb="md">
-        New Shifts for Today
-      </Title>
-      {shifts.map((shift, i) => (
+      <Title order={2} mb="md">My Shifts for Today</Title>
+
+      {existingShifts.map((shift: any) =>
+        editingShiftId === shift.id ? (
+          <ShiftForm
+            key={shift.id}
+            date={today}
+            data={{
+              type: shift.type,
+              startTime: dayjs(shift.start).format('HH:mm'),
+              endTime: dayjs(shift.end).format('HH:mm'),
+              sales: shift.sales?.toString(),
+              tipsCash: shift.tipsCash?.toString(),
+              tipsCard: shift.tipsCard?.toString(),
+            }}
+            onChange={() => { }}
+            onSave={async (updated: any) => {
+              const payload = {
+                ...shift,
+                type: updated.type,
+                start: dayjs.tz(`${today} ${updated.startTime}`, 'YYYY-MM-DD HH:mm', TORONTO).toISOString(),
+                end: dayjs.tz(`${today} ${updated.endTime}`, 'YYYY-MM-DD HH:mm', TORONTO).toISOString(),
+                sales: parseOptionalFloat(updated.sales),
+                tipsCash: parseOptionalFloat(updated.tipsCash),
+                tipsCard: parseOptionalFloat(updated.tipsCard),
+              };
+              await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shifts/${shift.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(payload),
+              });
+              fetchShifts();
+              setEditingShiftId(null);
+            }}
+            onRemove={() => setEditingShiftId(null)}
+          />
+        ) : (
+          <Paper key={shift.id} withBorder p="md" mt="sm">
+            <Group justify="space-between">
+              <Stack>
+                <Text><b>Type:</b> {shift.type}</Text>
+                <Text><b>Start:</b> {dayjs(shift.start).format('HH:mm')}</Text>
+                <Text><b>End:</b> {dayjs(shift.end).format('HH:mm')}</Text>
+                {shift.sales && <Text><b>Sales:</b> ${shift.sales.toFixed(2)}</Text>}
+                {(shift.tipsCash || shift.tipsCard) && (
+                  <Text><b>Tips:</b> ${(shift.tipsCash + shift.tipsCard).toFixed(2)}</Text>
+                )}
+                <Text><b>Wage:</b> ${shift.wage?.toFixed(2)}</Text>
+              </Stack>
+              <Button
+                variant="light"
+                leftSection={<IconEdit size={16} />}
+                onClick={() => setEditingShiftId(shift.id)}
+              >
+                Edit
+              </Button>
+            </Group>
+          </Paper>
+        )
+      )}
+
+      {shiftForms.map((form, index) => (
         <ShiftForm
-          key={shift.id}
-          onChange={(data: any) => updateShift(i, data)}
-          onRemove={shifts.length > 1 ? () => removeShift(i) : undefined}
+          key={form.id}
+          date={today}
+          data={form.data}
+          onChange={(data: any) => updateForm(index, data)}
+          onSave={async (newData: any) => {
+            const payload = {
+              type: newData.type,
+              employee: user?.id,
+              restaurant: typeof user?.restaurant === 'object' ? user?.restaurant?.id : user?.restaurant,
+              start: dayjs.tz(`${today} ${newData.startTime}`, 'YYYY-MM-DD HH:mm', TORONTO).toISOString(),
+              end: dayjs.tz(`${today} ${newData.endTime}`, 'YYYY-MM-DD HH:mm', TORONTO).toISOString(),
+              tipsCash: parseOptionalFloat(newData.tipsCash),
+              tipsCard: parseOptionalFloat(newData.tipsCard),
+              sales: parseOptionalFloat(newData.sales),
+            };
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shifts`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify(payload),
+            });
+            await fetchShifts();
+          }}
+          onRemove={() => setShiftForms((prev) => prev.filter((_, i) => i !== index))}
         />
       ))}
+
       <Group mt="md">
-        <Button leftSection={<IconPlus size={16} />} onClick={addShift} variant="light">
-          Add Another Shift
-        </Button>
-        <Button onClick={handleSubmitAll} color="green">
-          Submit All
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={() =>
+            setShiftForms((prev) => [
+              ...prev,
+              {
+                id: Date.now(),
+                data: {
+                  type: 'norm',
+                  startTime: dayjs().startOf('hour').format('HH:mm'),
+                  endTime: dayjs().startOf('hour').add(1, 'hour').format('HH:mm'),
+                  tipsCash: '',
+                  tipsCard: '',
+                  sales: '',
+                },
+              },
+            ])
+          }
+          variant="light"
+        >
+          Add New Shift
         </Button>
       </Group>
     </Container>

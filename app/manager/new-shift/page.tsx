@@ -1,3 +1,4 @@
+// ManagerNewShiftPage.tsx
 'use client';
 
 import {
@@ -8,121 +9,20 @@ import {
   Select,
   Stack,
   Text,
-  TextInput,
   Title,
 } from '@mantine/core';
-import { DateInput, TimeInput } from '@mantine/dates';
-import { useForm } from '@mantine/form';
-import { IconPlus, IconEdit } from '@tabler/icons-react';
+import { DateInput } from '@mantine/dates';
+import { IconEdit, IconPlus } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { useEffect, useState } from 'react';
 import '@mantine/dates/styles.css';
+import ShiftForm from '@/components/ShiftForm/ShiftForm';
+
 dayjs.extend(utc);
-
-const ShiftForm = ({ date, data, onChange, onRemove, onSave }: any) => {
-  const form = useForm({
-    initialValues: {
-      type: data?.type || 'norm',
-      startTime: data?.startTime || dayjs().startOf('hour').format('HH:mm'),
-      endTime: data?.endTime || dayjs().startOf('hour').add(1, 'hour').format('HH:mm'),
-      tipsCash: data?.tipsCash || '',
-      tipsCard: data?.tipsCard || '',
-      sales: data?.sales || '',
-    },
-  });
-
-  const handleChange = () => {
-    const { type, startTime, endTime, tipsCash, tipsCard, sales } = form.values;
-    onChange({ type, startTime, endTime, tipsCash, tipsCard, sales });
-  };
-
-  useEffect(() => {
-    handleChange(); // sync defaults immediately
-  }, []);
-
-  return (
-    <Paper withBorder p="md" radius="md" mt="sm">
-      <Stack>
-        <Text>Date: {date}</Text>
-        <Select
-          label="Shift Type"
-          data={[
-            { label: 'Norm Shift', value: 'norm' },
-            { label: 'Server Shift', value: 'server' },
-          ]}
-          {...form.getInputProps('type')}
-          onChange={(value) => {
-            form.setFieldValue('type', value!);
-            handleChange();
-          }}
-        />
-        <TimeInput
-          label="Start Time"
-          value={form.values.startTime}
-          onChange={(event) => {
-            form.setFieldValue('startTime', event.currentTarget.value);
-            handleChange();
-          }}
-        />
-        <TimeInput
-          label="End Time"
-          value={form.values.endTime}
-          onChange={(event) => {
-            form.setFieldValue('endTime', event.currentTarget.value);
-            handleChange();
-          }}
-        />
-        {form.values.type === 'server' && (
-          <>
-            <TextInput
-              label="Sales"
-              type="number"
-              step="0.01"
-              {...form.getInputProps('sales')}
-              onChange={(e) => {
-                form.setFieldValue('sales', e.currentTarget.value);
-                handleChange();
-              }}
-            />
-            <TextInput
-              label="Tips (Cash)"
-              type="number"
-              step="0.01"
-              {...form.getInputProps('tipsCash')}
-              onChange={(e) => {
-                form.setFieldValue('tipsCash', e.currentTarget.value);
-                handleChange();
-              }}
-            />
-            <TextInput
-              label="Tips (Card)"
-              type="number"
-              step="0.01"
-              {...form.getInputProps('tipsCard')}
-              onChange={(e) => {
-                form.setFieldValue('tipsCard', e.currentTarget.value);
-                handleChange();
-              }}
-            />
-          </>
-        )}
-        <Group>
-          {onRemove && (
-            <Button variant="outline" color="red" onClick={onRemove}>
-              Cancel
-            </Button>
-          )}
-          {onSave && (
-            <Button color="green" onClick={() => onSave(form.values)}>
-              Save
-            </Button>
-          )}
-        </Group>
-      </Stack>
-    </Paper>
-  );
-};
+dayjs.extend(timezone);
+const TORONTO = 'America/Toronto';
 
 export default function ManagerNewShiftPage() {
   const [selectedDate, setSelectedDate] = useState('');
@@ -191,8 +91,8 @@ export default function ManagerNewShiftPage() {
         id: Date.now(),
         data: {
           type: 'norm',
-          startTime: dayjs().startOf('hour').format('HH:mm'),
-          endTime: dayjs().startOf('hour').add(1, 'hour').format('HH:mm'),
+          startTime: dayjs().tz(TORONTO).startOf('hour').format('HH:mm'),
+          endTime: dayjs().tz(TORONTO).startOf('hour').add(1, 'hour').format('HH:mm'),
           tipsCash: '',
           tipsCard: '',
           sales: '',
@@ -201,29 +101,8 @@ export default function ManagerNewShiftPage() {
     ]);
   };
 
-  const submitNewShifts = async () => {
-    const shiftPayloads = shiftForms.map((s) => ({
-      type: s.data.type,
-      employee: employeeId,
-      restaurant: selectedEmployee?.restaurant?.id,
-      start: `${selectedDate}T${s.data.startTime}:00.000`,
-      end: `${selectedDate}T${s.data.endTime}:00.000`,
-      tipsCash: s.data.tipsCash ? parseFloat(s.data.tipsCash) : undefined,
-      tipsCard: s.data.tipsCard ? parseFloat(s.data.tipsCard) : undefined,
-      sales: s.data.sales ? parseFloat(s.data.sales) : undefined,
-    }));
-
-    for (const payload of shiftPayloads) {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shifts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-    }
-
-    fetchShiftsForDate();
-  };
+  const parseOptionalFloat = (val: string) =>
+    val === undefined || val === null || val.trim() === '' ? undefined : parseFloat(val);
 
   return (
     <Container size="sm" mt="xl">
@@ -254,23 +133,24 @@ export default function ManagerNewShiftPage() {
                 date={selectedDate}
                 data={{
                   type: shift.type,
-                  startTime: dayjs(shift.start).format('HH:mm'),
-                  endTime: dayjs(shift.end).format('HH:mm'),
+                  startTime: dayjs(shift.start).tz(TORONTO).format('HH:mm'),
+                  endTime: dayjs(shift.end).tz(TORONTO).format('HH:mm'),
                   sales: shift.sales?.toString(),
                   tipsCash: shift.tipsCash?.toString(),
                   tipsCard: shift.tipsCard?.toString(),
                 }}
-                onChange={() => {}}
+                onChange={() => { }}
                 onSave={async (updated: any) => {
                   const payload = {
                     ...shift,
                     type: updated.type,
-                    start: `${selectedDate}T${updated.startTime}:00.000`,
-                    end: `${selectedDate}T${updated.endTime}:00.000`,
-                    sales: updated.sales ? parseFloat(updated.sales) : undefined,
-                    tipsCash: updated.tipsCash ? parseFloat(updated.tipsCash) : undefined,
-                    tipsCard: updated.tipsCard ? parseFloat(updated.tipsCard) : undefined,
+                    start: dayjs.tz(`${selectedDate} ${updated.startTime}`, 'YYYY-MM-DD HH:mm', TORONTO).toISOString(),
+                    end: dayjs.tz(`${selectedDate} ${updated.endTime}`, 'YYYY-MM-DD HH:mm', TORONTO).toISOString(),
+                    sales: parseOptionalFloat(updated.sales),
+                    tipsCash: parseOptionalFloat(updated.tipsCash),
+                    tipsCard: parseOptionalFloat(updated.tipsCard),
                   };
+
                   await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shifts/${shift.id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
@@ -287,8 +167,8 @@ export default function ManagerNewShiftPage() {
                 <Group justify="space-between">
                   <Stack>
                     <Text><b>Type:</b> {shift.type}</Text>
-                    <Text><b>Start:</b> {dayjs(shift.start).format('HH:mm')}</Text>
-                    <Text><b>End:</b> {dayjs(shift.end).format('HH:mm')}</Text>
+                    <Text><b>Start:</b> {dayjs(shift.start).tz(TORONTO).format('HH:mm')}</Text>
+                    <Text><b>End:</b> {dayjs(shift.end).tz(TORONTO).format('HH:mm')}</Text>
                     {shift.sales && <Text><b>Sales:</b> ${shift.sales.toFixed(2)}</Text>}
                     {(shift.tipsCash || shift.tipsCard) && (
                       <Text><b>Tips:</b> ${(shift.tipsCash + shift.tipsCard).toFixed(2)}</Text>
@@ -315,16 +195,35 @@ export default function ManagerNewShiftPage() {
           date={selectedDate}
           data={form.data}
           onChange={(data: any) => updateForm(index, data)}
-          onRemove={shiftForms.length > 1 ? () => setShiftForms((prev) => prev.filter((_, i) => i !== index)) : undefined}
+          onSave={async (newData: any) => {
+            const payload = {
+              type: newData.type,
+              employee: employeeId,
+              restaurant: selectedEmployee?.restaurant?.id,
+              start: dayjs.tz(`${selectedDate} ${newData.startTime}`, 'YYYY-MM-DD HH:mm', TORONTO).toISOString(),
+              end: dayjs.tz(`${selectedDate} ${newData.endTime}`, 'YYYY-MM-DD HH:mm', TORONTO).toISOString(),
+              tipsCash: parseOptionalFloat(newData.tipsCash),
+              tipsCard: parseOptionalFloat(newData.tipsCard),
+              sales: parseOptionalFloat(newData.sales),
+            };
+
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shifts`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify(payload),
+            });
+            await fetchShiftsForDate();
+          }}
+          onRemove={() => {
+            setShiftForms((prev) => prev.filter((_, i) => i !== index));
+          }}
         />
       ))}
 
       <Group mt="md">
         <Button leftSection={<IconPlus size={16} />} onClick={addShiftForm} variant="light">
           Add New Shift
-        </Button>
-        <Button onClick={submitNewShifts} color="green" disabled={shiftForms.length === 0}>
-          Submit All
         </Button>
       </Group>
     </Container>
