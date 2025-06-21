@@ -1,89 +1,60 @@
-'use client';
+'use client'
 
 import {
   Button,
   Card,
   Container,
+  Group,
   Stack,
+  Table,
   Text,
   Title,
-} from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
-import { useState } from 'react';
-import '@mantine/dates/styles.css';
-import dayjs from 'dayjs';
+} from '@mantine/core'
+import { DatePickerInput } from '@mantine/dates'
+import '@mantine/dates/styles.css'
+import { useUser } from '@/lib/UserContext'
+import { useState } from 'react'
+import dayjs from 'dayjs'
+import DailyDetailsTable from '@/components/DailyDetailsTable/DailyDetailsTable'
 
-export default function EmployeeDashboard() {
-  const [dateRange, setDateRange] = useState<[string | null, string | null]>([null, null]);
-  const [summary, setSummary] = useState<any | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
+export default function EmployeeDashboardPage() {
+  const user = useUser()
 
-  const fetchSummary = async () => {
-    if (!dateRange[0] || !dateRange[1]) {
-      return;
-    }
+  const [range, setRange] = useState<[string | null, string | null]>([null, null])
+  const [summaryData, setSummaryData] = useState<any>(null)
+
+  const fetchMySummary = async () => {
+    const [start, end] = range
+    if (!start || !end || !user?.id) return
 
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/employee-daily-summary-range?start=${dateRange[0]}&end=${dateRange[1]}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/employee-daily-summary-range?employee=${user.id}&start=${dayjs(start).format('YYYY-MM-DD')}&end=${dayjs(end).format('YYYY-MM-DD')}`,
       { credentials: 'include' }
-    );
-
-    if (res.ok) {
-      const json = await res.json();
-      setSummary(json);
-    }
-  };
+    )
+    const data = await res.json()
+    setSummaryData(data)
+  }
 
   return (
-    <Container size="sm" mt="xl">
-      <Title order={2} mb="md">
-        Dashboard
-      </Title>
+    <Container>
+      <Title order={2} mt="md">My Work Summary</Title>
 
-      <DatePickerInput
-        type="range"
-        label="Pick a date range"
-        value={dateRange}
-        onChange={setDateRange}
-        mb="md"
-      />
+      <Stack mt="lg">
+        <Card withBorder>
+          <Title order={4}>📆 Select Date Range</Title>
+          <Group mt="sm">
+            <DatePickerInput
+              type="range"
+              label="Pick date range"
+              value={range}
+              onChange={setRange}
+            />
+            <Button onClick={fetchMySummary}>Load</Button>
+          </Group>
 
-      <Button onClick={fetchSummary} disabled={!dateRange[0] || !dateRange[1]}>
-        Show Summary
-      </Button>
-
-      {summary && (
-        <Stack mt="xl">
-          <Title order={3}>Summary</Title>
-          <Text>Total Base Salary (Norm): ${summary.totals.totalNormHours.toFixed(2)}</Text>
-          <Text>Total Base Salary (Server): ${summary.totals.totalServerHours.toFixed(2)}</Text>
-          <Text>Total Tips (Cash + Card): ${summary.totals.totalTips.toFixed(2)}</Text>
-          <Text>Total Sales: ${summary.totals.totalSales.toFixed(2)}</Text>
-          <Text>Total Wage: ${summary.totals.totalWage.toFixed(2)}</Text>
-
-          <Button variant="outline" onClick={() => setShowDetails((prev) => !prev)}>
-            {showDetails ? 'Hide Details' : 'Show Details'}
-          </Button>
-
-          {showDetails && (
-            <Stack mt="md">
-              <Title order={4}>Daily Breakdown</Title>
-              {summary.summaries.map((s: any) => (
-                <Card withBorder key={s.date} shadow="sm" p="md">
-                  <Text fw={700}>{dayjs(s.date).format('YYYY-MM-DD')}</Text>
-                  <Text>Norm Hours: {s.normHours}</Text>
-                  <Text>Server Hours: {s.serverHours}</Text>
-                  <Text>Norm Wage: ${s.normWage}</Text>
-                  <Text>Server Wage: ${s.serverWage}</Text>
-                  <Text>Tips: ${s.tips}</Text>
-                  <Text>Sales: ${s.sales}</Text>
-                  <Text>Total Wage: ${s.totalWage}</Text>
-                </Card>
-              ))}
-            </Stack>
-          )}
-        </Stack>
-      )}
+          {summaryData && <DailyDetailsTable data={summaryData} />}
+        </Card>
+      </Stack>
     </Container>
-  );
+  )
 }

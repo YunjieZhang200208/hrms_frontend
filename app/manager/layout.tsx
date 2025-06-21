@@ -2,6 +2,7 @@ import { getUser } from '@/lib/getUser'
 import { redirect } from 'next/navigation'
 import Sidebar from '@/components/Sidebar/Sidebar'
 import UserContextClientWrapper from '@/components/UserContextClientWrapper/UserContextClientWrapper'
+import styles from './manager-layout.module.css'
 
 export default async function ManagerLayout({
   children,
@@ -16,9 +17,9 @@ export default async function ManagerLayout({
 
   return (
     <UserContextClientWrapper user={user}>
-      <div style={{ display: 'flex' }}>
+      <div className={styles.wrapper}>
         <Sidebar userRole="manager" />
-        <div style={{ padding: '2rem', flex: 1 }}>{children}</div>
+        <div className={styles.content}>{children}</div>
       </div>
     </UserContextClientWrapper>
   )

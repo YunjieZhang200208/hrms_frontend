@@ -17,6 +17,7 @@ import timezone from 'dayjs/plugin/timezone';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/lib/UserContext';
 import ShiftForm from '@/components/ShiftForm/ShiftForm';
+import DailySummaryCard from '@/components/DailySummaryCard/DailySummaryCard';
 import '@mantine/dates/styles.css';
 
 dayjs.extend(utc);
@@ -29,6 +30,7 @@ export default function EmployeeNewShiftPage() {
   const [shiftForms, setShiftForms] = useState<any[]>([]);
   const [existingShifts, setExistingShifts] = useState<any[]>([]);
   const [editingShiftId, setEditingShiftId] = useState<string | null>(null);
+  const [dailySummary, setDailySummary] = useState<any | null>(null);
 
   const parseOptionalFloat = (val: string) =>
     val === undefined || val === null || val.trim() === '' ? undefined : parseFloat(val);
@@ -44,9 +46,19 @@ export default function EmployeeNewShiftPage() {
     setEditingShiftId(null);
   };
 
+  const fetchDailySummary = async () => {
+    if (!user?.id) return;
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/employee-daily-summary?date=${today}`, {
+      credentials: 'include',
+    });
+    const json = await res.json();
+    setDailySummary(json);
+  };
+
   useEffect(() => {
     if (user?.id) {
       fetchShifts();
+      fetchDailySummary();
     }
   }, [user]);
 
@@ -61,6 +73,8 @@ export default function EmployeeNewShiftPage() {
   return (
     <Container size="sm" mt="xl">
       <Title order={2} mb="md">My Shifts for Today</Title>
+
+      {dailySummary && <DailySummaryCard summary={dailySummary} />}
 
       {existingShifts.map((shift: any) =>
         editingShiftId === shift.id ? (
@@ -93,6 +107,7 @@ export default function EmployeeNewShiftPage() {
                 body: JSON.stringify(payload),
               });
               fetchShifts();
+              fetchDailySummary();
               setEditingShiftId(null);
             }}
             onRemove={() => setEditingShiftId(null)}
@@ -146,6 +161,7 @@ export default function EmployeeNewShiftPage() {
               body: JSON.stringify(payload),
             });
             await fetchShifts();
+            await fetchDailySummary();
           }}
           onRemove={() => setShiftForms((prev) => prev.filter((_, i) => i !== index))}
         />

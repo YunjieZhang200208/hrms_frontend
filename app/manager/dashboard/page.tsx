@@ -15,6 +15,7 @@ import '@mantine/dates/styles.css'
 import { useUser } from '@/lib/UserContext'
 import { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
+import DailyDetailsTable from '@/components/DailyDetailsTable/DailyDetailsTable'
 
 export default function ManagerDashboardPage() {
   const user = useUser()
@@ -151,54 +152,7 @@ export default function ManagerDashboardPage() {
           )}
         </Card>
 
-        {expandedEmployeeData && (
-          <Card withBorder mt="lg">
-            <Title order={4}>
-              Daily Details for {expandedEmployeeData.employee.username}
-            </Title>
-            <Table mt="md" highlightOnHover>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Norm H</th>
-                  <th>Server H</th>
-                  <th>Sales</th>
-                  <th>Tips</th>
-                  <th>Tip Bonus</th>
-                  <th>Norm $</th>
-                  <th>Server $</th>
-                  <th>Total $</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expandedEmployeeData.summaries.map((day: any) => (
-                  <tr key={day.date}>
-                    <td>{day.date}</td>
-                    <td>{day.normHours}</td>
-                    <td>{day.serverHours}</td>
-                    <td>${day.sales}</td>
-                    <td>${day.tips}</td>
-                    <td>${day.tipsAfterRate}</td>
-                    <td>${day.normWage}</td>
-                    <td>${day.serverWage}</td>
-                    <td>${day.totalWage}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-
-            <Stack mt="md">
-              <Text>Total Norm Hours: {expandedEmployeeData.totals.totalNormHours}</Text>
-              <Text>Total Server Hours: {expandedEmployeeData.totals.totalServerHours}</Text>
-              <Text>Total Sales: ${expandedEmployeeData.totals.totalSales}</Text>
-              <Text>Total Tips: ${expandedEmployeeData.totals.totalTips}</Text>
-              <Text>Total Tip Bonus: ${expandedEmployeeData.totals.totalTipsAfterRate}</Text>
-              <Text>Total Norm Wage: ${expandedEmployeeData.totals.totalNormWage}</Text>
-              <Text>Total Server Wage: ${expandedEmployeeData.totals.totalServerWage}</Text>
-              <Text>Total Wage: ${expandedEmployeeData.totals.totalWage}</Text>
-            </Stack>
-          </Card>
-        )}
+        {expandedEmployeeData && <DailyDetailsTable data={expandedEmployeeData} />}
       </Stack>
     </Container>
   )

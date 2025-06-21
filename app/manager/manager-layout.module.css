@@ -1,0 +1,13 @@
+.wrapper {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
