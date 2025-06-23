@@ -17,10 +17,13 @@ import { useUser } from '@/lib/UserContext'
 import { notifications } from '@mantine/notifications'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-dayjs.extend(utc)
-
+import timezone from 'dayjs/plugin/timezone'
 import { IconEdit } from '@tabler/icons-react'
-import ChangePasswordForm from '@/components/ChangePasswordForm/ChangePasswordForm';
+import ChangePasswordForm from '@/components/ChangePasswordForm/ChangePasswordForm'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+const TORONTO = 'America/Toronto'
 
 export default function EmployeeProfilePage() {
   const user = useUser()
@@ -41,7 +44,9 @@ export default function EmployeeProfilePage() {
       form.setValues({
         username: user.username || '',
         sin: user.sin || '',
-        dob: user.dob ? dayjs(user.dob).utc().format('YYYY-MM-DD') : '',
+        dob: user.dob
+          ? dayjs(user.dob).tz(TORONTO).format('YYYY-MM-DD')
+          : '',
         address: user.address || '',
       })
     }
@@ -55,7 +60,7 @@ export default function EmployeeProfilePage() {
       sin: form.values.sin,
       address: form.values.address,
       dob: form.values.dob
-        ? new Date(`${form.values.dob}T00:00:00.000Z`) // Force UTC midnight
+        ? dayjs.tz(form.values.dob, 'YYYY-MM-DD', TORONTO).toDate()
         : null,
     }
 
@@ -92,7 +97,9 @@ export default function EmployeeProfilePage() {
       form.setValues({
         username: user.username || '',
         sin: user.sin || '',
-        dob: user.dob ? dayjs(user.dob).utc().format('YYYY-MM-DD') : '',
+        dob: user.dob
+          ? dayjs(user.dob).tz(TORONTO).format('YYYY-MM-DD')
+          : '',
         address: user.address || '',
       })
     }
@@ -110,25 +117,12 @@ export default function EmployeeProfilePage() {
           <Text><b>邮箱 (Email)：</b> {user.email}</Text>
           <Text><b>类型 (Role)：</b> {user.role}</Text>
           <Text><b>级别 (Level)：</b> {user.level}</Text>
-          {/* <Text><b>Base Hourly Rate (Norm):</b> ${user.baseRate}</Text>
-          {user.level === 'II' && (
-            <>
-              <Text><b>Base Hourly Rate (Server):</b> ${user.baseRateWithTips}</Text>
-              <Text><b>Tip Rate Multiplier:</b> {user.tipRate}</Text>
-            </>
-          )} */}
           <Text><b>餐厅 (Restaurant)：</b> {typeof user.restaurant === 'object' ? user.restaurant.name : user.restaurant}</Text>
 
           {editing ? (
             <>
-              <TextInput
-                label="用户名 (Username)"
-                {...form.getInputProps('username')}
-              />
-              <TextInput
-                label="社保号 (SIN)"
-                {...form.getInputProps('sin')}
-              />
+              <TextInput label="用户名 (Username)" {...form.getInputProps('username')} />
+              <TextInput label="社保号 (SIN)" {...form.getInputProps('sin')} />
               <DateInput
                 label="出生日期 (DOB)"
                 value={form.values.dob ? dayjs(form.values.dob).toDate() : null}
@@ -136,10 +130,7 @@ export default function EmployeeProfilePage() {
                   form.setFieldValue('dob', date ? dayjs(date).format('YYYY-MM-DD') : '')
                 }
               />
-              <TextInput
-                label="个人地址 (Address)"
-                {...form.getInputProps('address')}
-              />
+              <TextInput label="个人地址 (Address)" {...form.getInputProps('address')} />
               <Group justify="flex-end">
                 <Button onClick={handleCancel} variant="outline">Cancel</Button>
                 <Button onClick={handleSubmit} loading={loading} color="green">Save</Button>
@@ -155,7 +146,6 @@ export default function EmployeeProfilePage() {
                 <Button
                   onClick={() => setEditing(true)}
                   leftSection={<IconEdit size={16} />}
-
                 >编辑</Button>
               </Group>
             </>
@@ -164,7 +154,6 @@ export default function EmployeeProfilePage() {
       </Paper>
 
       <ChangePasswordForm />
-
     </Container>
   )
 }

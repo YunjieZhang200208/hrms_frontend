@@ -1,4 +1,3 @@
-// EmployeeNewShiftPage.tsx
 'use client';
 
 import {
@@ -26,7 +25,7 @@ const TORONTO = 'America/Toronto';
 
 export default function EmployeeNewShiftPage() {
   const user = useUser();
-  const today = dayjs().format('YYYY-MM-DD');
+  const today = dayjs().tz(TORONTO).format('YYYY-MM-DD');
   const [shiftForms, setShiftForms] = useState<any[]>([]);
   const [existingShifts, setExistingShifts] = useState<any[]>([]);
   const [editingShiftId, setEditingShiftId] = useState<string | null>(null);
@@ -36,8 +35,11 @@ export default function EmployeeNewShiftPage() {
     val === undefined || val === null || val.trim() === '' ? undefined : parseFloat(val);
 
   const fetchShifts = async () => {
+    const start = dayjs.tz(`${today} 00:00`, 'YYYY-MM-DD HH:mm', TORONTO).toISOString();
+    const end = dayjs.tz(`${today} 23:59:59.999`, 'YYYY-MM-DD HH:mm:ss.SSS', TORONTO).toISOString();
+
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/shifts?where[start][greater_than_equal]=${today}T00:00:00.000&where[start][less_than_equal]=${today}T23:59:59.999&where[employee][equals]=${user?.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/shifts?where[start][greater_than_equal]=${start}&where[start][less_than_equal]=${end}&where[employee][equals]=${user?.id}`,
       { credentials: 'include' }
     );
     const json = await res.json();
@@ -83,8 +85,8 @@ export default function EmployeeNewShiftPage() {
             date={today}
             data={{
               type: shift.type,
-              startTime: dayjs(shift.start).format('HH:mm'),
-              endTime: dayjs(shift.end).format('HH:mm'),
+              startTime: dayjs(shift.start).tz(TORONTO).format('HH:mm'),
+              endTime: dayjs(shift.end).tz(TORONTO).format('HH:mm'),
               sales: shift.sales?.toString(),
               tipsCash: shift.tipsCash?.toString(),
               tipsCard: shift.tipsCard?.toString(),
@@ -116,16 +118,13 @@ export default function EmployeeNewShiftPage() {
           <Paper key={shift.id} withBorder p="md" mt="sm">
             <Group justify="space-between">
               <Stack>
-                <Text><b>类型 (Type)：</b> {
-                  shift.type === 'norm' ? '非服务员' : '服务员'
-                } </Text>
-                <Text><b>开始时间 (Start Time)：</b> {dayjs(shift.start).format('HH:mm')}</Text>
-                <Text><b>结束时间 (End Time)：</b> {dayjs(shift.end).format('HH:mm')}</Text>
+                <Text><b>类型 (Type)：</b> {shift.type === 'norm' ? '非服务员' : '服务员'}</Text>
+                <Text><b>开始时间 (Start Time)：</b> {dayjs(shift.start).tz(TORONTO).format('HH:mm')}</Text>
+                <Text><b>结束时间 (End Time)：</b> {dayjs(shift.end).tz(TORONTO).format('HH:mm')}</Text>
                 {shift.sales && <Text><b>销售额 (Sales)：</b> ${shift.sales.toFixed(2)}</Text>}
                 {(shift.tipsCash || shift.tipsCard) && (
                   <Text><b>小费总额 (Total Tips)：</b> ${(shift.tipsCash + shift.tipsCard).toFixed(2)}</Text>
                 )}
-                {/* <Text><b>Wage:</b> ${shift.wage?.toFixed(2)}</Text> */}
               </Stack>
               <Button
                 variant="light"
@@ -179,8 +178,8 @@ export default function EmployeeNewShiftPage() {
                 id: Date.now(),
                 data: {
                   type: 'norm',
-                  startTime: dayjs().startOf('hour').format('HH:mm'),
-                  endTime: dayjs().startOf('hour').add(1, 'hour').format('HH:mm'),
+                  startTime: dayjs().tz(TORONTO).startOf('hour').format('HH:mm'),
+                  endTime: dayjs().tz(TORONTO).startOf('hour').add(1, 'hour').format('HH:mm'),
                   tipsCash: '',
                   tipsCard: '',
                   sales: '',
