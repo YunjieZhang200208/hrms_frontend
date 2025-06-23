@@ -51,13 +51,13 @@ export default function ShiftForm({ date, data, onChange, onRemove, onSave }: an
     return (
         <Paper withBorder p="md" radius="md" mt="sm">
             <Stack>
-                <Text>Date: {date}</Text>
+                <Text>日期：{date}</Text>
 
                 <Select
-                    label="Shift Type"
+                    label="类型 (Type)"
                     data={[
-                        { label: 'Norm Shift', value: 'norm' },
-                        { label: 'Server Shift', value: 'server' },
+                        { label: '非服务员 (Not Server)', value: 'norm' },
+                        { label: '服务员 (Server)', value: 'server' },
                     ]}
                     {...form.getInputProps('type')}
                     onChange={(value) => {
@@ -67,7 +67,7 @@ export default function ShiftForm({ date, data, onChange, onRemove, onSave }: an
                 />
 
                 <TimePicker
-                    label="Start Time"
+                    label="开始时间 (Start Time)"
                     withSeconds={false}
                     format="24h"
                     value={form.values.startTime}
@@ -78,7 +78,7 @@ export default function ShiftForm({ date, data, onChange, onRemove, onSave }: an
                 />
 
                 <TimePicker
-                    label="End Time"
+                    label="结束时间 (End Time)"
                     withSeconds={false}
                     format="24h"
                     value={form.values.endTime}
@@ -91,7 +91,7 @@ export default function ShiftForm({ date, data, onChange, onRemove, onSave }: an
                 {form.values.type === 'server' && (
                     <>
                         <TextInput
-                            label="Sales"
+                            label="销售额 (Sales)"
                             type="number"
                             step="0.01"
                             value={form.values.sales}
@@ -101,7 +101,7 @@ export default function ShiftForm({ date, data, onChange, onRemove, onSave }: an
                             }}
                         />
                         <TextInput
-                            label="Tips (Cash)"
+                            label="小费 (Cash)"
                             type="number"
                             step="0.01"
                             value={form.values.tipsCash}
@@ -111,7 +111,7 @@ export default function ShiftForm({ date, data, onChange, onRemove, onSave }: an
                             }}
                         />
                         <TextInput
-                            label="Tips (Card)"
+                            label="小费 (Card)"
                             type="number"
                             step="0.01"
                             value={form.values.tipsCard}

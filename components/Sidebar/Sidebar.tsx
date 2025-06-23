@@ -59,7 +59,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
         ]
       : [
           { icon: IconPlus, label: 'New Shift', path: '/employee/new-shift' },
-          { icon: IconGauge, label: 'Dashboard', path: '/employee/dashboard' },
+          // { icon: IconGauge, label: 'Dashboard', path: '/employee/dashboard' },
           { icon: IconUser, label: 'Profile', path: '/employee/profile' },
         ];
 

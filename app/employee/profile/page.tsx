@@ -19,6 +19,9 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 dayjs.extend(utc)
 
+import { IconEdit } from '@tabler/icons-react'
+import ChangePasswordForm from '@/components/ChangePasswordForm/ChangePasswordForm';
+
 export default function EmployeeProfilePage() {
   const user = useUser()
   const [loading, setLoading] = useState(false)
@@ -95,44 +98,46 @@ export default function EmployeeProfilePage() {
     }
   }
 
-  if (!user) return null
+  if (!user) {
+    return null
+  }
 
   return (
     <Container size="sm" mt="xl">
-      <Title order={2} mb="md">My Profile</Title>
+      <Title order={2} mb="md">个人资料 (My Profile)</Title>
       <Paper withBorder p="md" radius="md">
         <Stack>
-          <Text><b>Email:</b> {user.email}</Text>
-          <Text><b>Role:</b> {user.role}</Text>
-          <Text><b>Level:</b> {user.level}</Text>
-          <Text><b>Base Hourly Rate (Norm):</b> ${user.baseRate}</Text>
+          <Text><b>邮箱 (Email)：</b> {user.email}</Text>
+          <Text><b>类型 (Role)：</b> {user.role}</Text>
+          <Text><b>级别 (Level)：</b> {user.level}</Text>
+          {/* <Text><b>Base Hourly Rate (Norm):</b> ${user.baseRate}</Text>
           {user.level === 'II' && (
             <>
               <Text><b>Base Hourly Rate (Server):</b> ${user.baseRateWithTips}</Text>
               <Text><b>Tip Rate Multiplier:</b> {user.tipRate}</Text>
             </>
-          )}
-          <Text><b>Restaurant:</b> {typeof user.restaurant === 'object' ? user.restaurant.name : user.restaurant}</Text>
+          )} */}
+          <Text><b>餐厅 (Restaurant)：</b> {typeof user.restaurant === 'object' ? user.restaurant.name : user.restaurant}</Text>
 
           {editing ? (
             <>
               <TextInput
-                label="Username"
+                label="用户名 (Username)"
                 {...form.getInputProps('username')}
               />
               <TextInput
-                label="Social Insurance Number (SIN)"
+                label="社保号 (SIN)"
                 {...form.getInputProps('sin')}
               />
               <DateInput
-                label="Date of Birth"
+                label="出生日期 (DOB)"
                 value={form.values.dob ? dayjs(form.values.dob).toDate() : null}
                 onChange={(date) =>
                   form.setFieldValue('dob', date ? dayjs(date).format('YYYY-MM-DD') : '')
                 }
               />
               <TextInput
-                label="Address"
+                label="个人地址 (Address)"
                 {...form.getInputProps('address')}
               />
               <Group justify="flex-end">
@@ -142,17 +147,24 @@ export default function EmployeeProfilePage() {
             </>
           ) : (
             <>
-              <Text><b>Username:</b> {form.values.username}</Text>
-              <Text><b>SIN:</b> {form.values.sin}</Text>
-              <Text><b>DOB:</b> {form.values.dob}</Text>
-              <Text><b>Address:</b> {form.values.address}</Text>
+              <Text><b>用户名 (Username)：</b> {form.values.username}</Text>
+              <Text><b>社保号 (SIN)：</b> {form.values.sin}</Text>
+              <Text><b>出生日期 (DOB)：</b> {form.values.dob}</Text>
+              <Text><b>个人地址 (Address)：</b> {form.values.address}</Text>
               <Group justify="flex-end">
-                <Button onClick={() => setEditing(true)}>Edit</Button>
+                <Button
+                  onClick={() => setEditing(true)}
+                  leftSection={<IconEdit size={16} />}
+
+                >编辑</Button>
               </Group>
             </>
           )}
         </Stack>
       </Paper>
+
+      <ChangePasswordForm />
+
     </Container>
   )
 }

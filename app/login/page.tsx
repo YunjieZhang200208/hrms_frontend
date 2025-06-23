@@ -8,10 +8,7 @@ import {
   Container,
   Button,
   Stack,
-  Anchor,
-  Text,
 } from '@mantine/core';
-import Link from 'next/link';
 import { useForm } from '@mantine/form';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -42,7 +39,7 @@ export default function LoginPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: values.email,      // not username
+          email: values.email,
           password: values.password,
         }),
       });
@@ -53,8 +50,6 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-
-      console.log('Logged in user:', data);
 
       const user = data.user;
 
@@ -85,29 +80,29 @@ export default function LoginPage() {
 
   return (
     <Container size={420} my={40}>
-      <Title ta="center">Welcome back</Title>
+      <Title ta="center">SshStr System</Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack>
             <TextInput
-              label="Email"
+              label="邮箱 (Email)"
               placeholder="you@example.com"
               {...form.getInputProps('email')}
             />
             <PasswordInput
-              label="Password"
+              label="密码 (Password)"
               placeholder="Your password"
               {...form.getInputProps('password')}
             />
             <Button type="submit" fullWidth mt="md" loading={loading}>
               Login
             </Button>
-            <Text size="sm" mt="sm">
+            {/* <Text size="sm" mt="sm">
               Don't have an account?{' '}
               <Anchor component={Link} href="/register" size="sm">
                 Register here
               </Anchor>
-            </Text>
+            </Text> */}
           </Stack>
         </form>
       </Paper>

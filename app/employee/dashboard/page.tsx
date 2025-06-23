@@ -6,8 +6,6 @@ import {
   Container,
   Group,
   Stack,
-  Table,
-  Text,
   Title,
 } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
@@ -25,7 +23,9 @@ export default function EmployeeDashboardPage() {
 
   const fetchMySummary = async () => {
     const [start, end] = range
-    if (!start || !end || !user?.id) return
+    if (!start || !end || !user?.id) {
+      return
+    }
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/employee-daily-summary-range?employee=${user.id}&start=${dayjs(start).format('YYYY-MM-DD')}&end=${dayjs(end).format('YYYY-MM-DD')}`,

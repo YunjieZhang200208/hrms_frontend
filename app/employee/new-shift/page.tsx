@@ -17,7 +17,7 @@ import timezone from 'dayjs/plugin/timezone';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/lib/UserContext';
 import ShiftForm from '@/components/ShiftForm/ShiftForm';
-import DailySummaryCard from '@/components/DailySummaryCard/DailySummaryCard';
+// import DailySummaryCard from '@/components/DailySummaryCard/DailySummaryCard';
 import '@mantine/dates/styles.css';
 
 dayjs.extend(utc);
@@ -30,7 +30,7 @@ export default function EmployeeNewShiftPage() {
   const [shiftForms, setShiftForms] = useState<any[]>([]);
   const [existingShifts, setExistingShifts] = useState<any[]>([]);
   const [editingShiftId, setEditingShiftId] = useState<string | null>(null);
-  const [dailySummary, setDailySummary] = useState<any | null>(null);
+  // const [dailySummary, setDailySummary] = useState<any | null>(null);
 
   const parseOptionalFloat = (val: string) =>
     val === undefined || val === null || val.trim() === '' ? undefined : parseFloat(val);
@@ -46,19 +46,19 @@ export default function EmployeeNewShiftPage() {
     setEditingShiftId(null);
   };
 
-  const fetchDailySummary = async () => {
-    if (!user?.id) return;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/employee-daily-summary?date=${today}`, {
-      credentials: 'include',
-    });
-    const json = await res.json();
-    setDailySummary(json);
-  };
+  // const fetchDailySummary = async () => {
+  //   if (!user?.id) { return; }
+  //   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/employee-daily-summary?date=${today}`, {
+  //     credentials: 'include',
+  //   });
+  //   const json = await res.json();
+  //   setDailySummary(json);
+  // };
 
   useEffect(() => {
     if (user?.id) {
       fetchShifts();
-      fetchDailySummary();
+      // fetchDailySummary();
     }
   }, [user]);
 
@@ -72,9 +72,9 @@ export default function EmployeeNewShiftPage() {
 
   return (
     <Container size="sm" mt="xl">
-      <Title order={2} mb="md">My Shifts for Today</Title>
+      <Title order={2} mb="md">今日班次 (My Shifts for Today)</Title>
 
-      {dailySummary && <DailySummaryCard summary={dailySummary} />}
+      {/* {dailySummary && <DailySummaryCard summary={dailySummary} />} */}
 
       {existingShifts.map((shift: any) =>
         editingShiftId === shift.id ? (
@@ -107,7 +107,7 @@ export default function EmployeeNewShiftPage() {
                 body: JSON.stringify(payload),
               });
               fetchShifts();
-              fetchDailySummary();
+              // fetchDailySummary();
               setEditingShiftId(null);
             }}
             onRemove={() => setEditingShiftId(null)}
@@ -116,21 +116,23 @@ export default function EmployeeNewShiftPage() {
           <Paper key={shift.id} withBorder p="md" mt="sm">
             <Group justify="space-between">
               <Stack>
-                <Text><b>Type:</b> {shift.type}</Text>
-                <Text><b>Start:</b> {dayjs(shift.start).format('HH:mm')}</Text>
-                <Text><b>End:</b> {dayjs(shift.end).format('HH:mm')}</Text>
-                {shift.sales && <Text><b>Sales:</b> ${shift.sales.toFixed(2)}</Text>}
+                <Text><b>类型 (Type)：</b> {
+                  shift.type === 'norm' ? '非服务员' : '服务员'
+                } </Text>
+                <Text><b>开始时间 (Start Time)：</b> {dayjs(shift.start).format('HH:mm')}</Text>
+                <Text><b>结束时间 (End Time)：</b> {dayjs(shift.end).format('HH:mm')}</Text>
+                {shift.sales && <Text><b>销售额 (Sales)：</b> ${shift.sales.toFixed(2)}</Text>}
                 {(shift.tipsCash || shift.tipsCard) && (
-                  <Text><b>Tips:</b> ${(shift.tipsCash + shift.tipsCard).toFixed(2)}</Text>
+                  <Text><b>小费总额 (Total Tips)：</b> ${(shift.tipsCash + shift.tipsCard).toFixed(2)}</Text>
                 )}
-                <Text><b>Wage:</b> ${shift.wage?.toFixed(2)}</Text>
+                {/* <Text><b>Wage:</b> ${shift.wage?.toFixed(2)}</Text> */}
               </Stack>
               <Button
                 variant="light"
                 leftSection={<IconEdit size={16} />}
                 onClick={() => setEditingShiftId(shift.id)}
               >
-                Edit
+                编辑
               </Button>
             </Group>
           </Paper>
@@ -161,7 +163,7 @@ export default function EmployeeNewShiftPage() {
               body: JSON.stringify(payload),
             });
             await fetchShifts();
-            await fetchDailySummary();
+            // await fetchDailySummary();
           }}
           onRemove={() => setShiftForms((prev) => prev.filter((_, i) => i !== index))}
         />
@@ -188,7 +190,7 @@ export default function EmployeeNewShiftPage() {
           }
           variant="light"
         >
-          Add New Shift
+          添加新班次
         </Button>
       </Group>
     </Container>
