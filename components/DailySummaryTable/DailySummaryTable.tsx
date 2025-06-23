@@ -26,7 +26,7 @@ export function DailySummaryTables({
             <thead>
               <tr>
                 <th>员工</th>
-                <th>Norm 时数</th>
+                <th>非服务员时长</th>
               </tr>
             </thead>
             <tbody>
@@ -48,8 +48,8 @@ export function DailySummaryTables({
             <thead>
               <tr>
                 <th>员工</th>
-                <th>Norm 时数</th>
-                <th>Server 时数</th>
+                <th>非服务员时长</th>
+                <th>服务员时长</th>
                 <th>销售额</th>
                 <th>现金小费</th>
                 <th>刷卡小费</th>

@@ -9,6 +9,7 @@ import {
   Table,
   Text,
   Title,
+  ScrollArea,
 } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
 import '@mantine/dates/styles.css'
@@ -25,7 +26,9 @@ export default function ManagerDashboardPage() {
   const [expandedEmployeeId, setExpandedEmployeeId] = useState<string | null>(null)
   const [expandedEmployeeData, setExpandedEmployeeData] = useState<any>(null)
 
-  if (!user) return <Text>Loading...</Text>
+  if (!user) {
+    return <Text>加载中...</Text>
+  }
 
   const restaurantId =
     typeof user.restaurant === 'object' ? user.restaurant.id : user.restaurant
@@ -59,17 +62,18 @@ export default function ManagerDashboardPage() {
   }
 
   const exportCSV = () => {
-    if (!rangeData) return
+    if (!rangeData) return;
 
-    const headers = ['Name', 'Norm Hours', 'Server Hours', 'Total Wage']
+    const headers = ['姓名', '非服务员', '服务工时', '总工资'];
     const rows = rangeData.employees.map((emp: any) => [
       emp.username,
       emp.normHours,
       emp.serverHours,
       emp.totalWage,
-    ])
+    ]);
 
     const csvContent =
+      '\uFEFF' + // BOM for UTF-8
       [headers, ...rows]
         .map((row) =>
           row
@@ -78,76 +82,80 @@ export default function ManagerDashboardPage() {
             )
             .join(',')
         )
-        .join('\n')
+        .join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
 
-    const link = document.createElement('a')
-    link.href = url
+    const link = document.createElement('a');
+    link.href = url;
     link.setAttribute(
       'download',
-      `employee_summary_${dayjs(range?.[0]).format('YYYYMMDD')}_${dayjs(range?.[1]).format('YYYYMMDD')}.csv`
-    )
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+      `员工工资汇总_${dayjs(range?.[0]).format('YYYYMMDD')}_${dayjs(range?.[1]).format('YYYYMMDD')}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   return (
     <Container>
-      <Title order={2} mt="md">Manager Dashboard</Title>
+      <Title order={2} mt="md">Dashboard</Title>
 
       <Stack mt="lg">
         <Card withBorder>
-          <Title order={4}>📊 Range Summary (Totals)</Title>
+          <Title order={4}>📊 时间范围汇总（总计）</Title>
           <Group mt="sm">
             <DatePickerInput
               type="range"
-              label="Pick date range"
+              label="选择日期范围"
               value={range}
               onChange={setRange}
             />
-            <Button onClick={fetchRangeSummary}>Load</Button>
+            <Button onClick={fetchRangeSummary}>加载数据</Button>
           </Group>
 
           {rangeData && (
             <>
               <Group justify="space-between" mt="md">
-                <Text>Total Wage (All): ${rangeData.totalWage}</Text>
-                <Button onClick={exportCSV} size="xs" variant="light">Export CSV</Button>
+                <Text>所有员工总工资：${rangeData.totalWage}</Text>
+                <Button onClick={exportCSV} size="xs" variant="light">导出 CSV</Button>
               </Group>
 
-              <Table mt="sm" highlightOnHover withColumnBorders>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Norm Hours</th>
-                    <th>Server Hours</th>
-                    <th>Total Wage</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rangeData.employees.map((emp: any) => (
-                    <tr key={emp.id}>
-                      <td>{emp.username}</td>
-                      <td>{emp.normHours}</td>
-                      <td>{emp.serverHours}</td>
-                      <td>${emp.totalWage}</td>
-                      <td>
-                        <Button
-                          size="xs"
-                          variant="light"
-                          onClick={() => fetchEmployeeDetails(emp.id)}
-                        >
-                          View Details
-                        </Button>
-                      </td>
+
+              <ScrollArea>
+                <Table mt="sm" highlightOnHover withColumnBorders>
+                  <thead>
+                    <tr>
+                      <th>姓名</th>
+                      <th>非服务员</th>
+                      <th>服务工时</th>
+                      <th>总工资</th>
+                      <th>操作</th>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
+                  </thead>
+                  <tbody>
+                    {rangeData.employees.map((emp: any) => (
+                      <tr key={emp.id}>
+                        <td>{emp.username}</td>
+                        <td>{emp.normHours}</td>
+                        <td>{emp.serverHours}</td>
+                        <td>${emp.totalWage}</td>
+                        <td>
+                          <Button
+                            size="xs"
+                            variant="light"
+                            onClick={() => fetchEmployeeDetails(emp.id)}
+                          >
+                            查看详情
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </ScrollArea>
             </>
           )}
         </Card>

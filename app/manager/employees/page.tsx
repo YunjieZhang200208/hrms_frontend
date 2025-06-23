@@ -26,7 +26,6 @@ export default function EmployeeManagementPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    console.log('User in EmployeeManagementPage:', user);
     if (user && user.role !== 'manager') {
       router.push('/unauthorized');
     }
@@ -91,10 +90,10 @@ export default function EmployeeManagementPage() {
 
   return (
     <Container size="sm" mt="xl">
-      <Title order={2} mb="md">Employee Management</Title>
+      <Title order={2} mb="md">员工管理</Title>
 
       <TextInput
-        placeholder="Search by username..."
+        placeholder="按用户名搜索..."
         value={search}
         onChange={(e) => setSearch(e.currentTarget.value)}
         mb="md"
@@ -112,7 +111,7 @@ export default function EmployeeManagementPage() {
                 fw={500}
                 onClick={() => {
                   setOpenId(isOpen ? null : emp.id);
-                  setEditingId(null); // reset edit mode
+                  setEditingId(null);
                 }}
                 style={{ cursor: 'pointer' }}
               >
@@ -121,16 +120,16 @@ export default function EmployeeManagementPage() {
 
               {isOpen && (
                 <Stack mt="sm">
-                  <Text><b>Email:</b> {emp.email}</Text>
-                  <Text><b>Level:</b> {emp.level}</Text>
-                  <Text><b>SIN:</b> {emp.sin}</Text>
-                  <Text><b>DOB:</b> {dayjs(emp.dob).format('YYYY-MM-DD')}</Text>
-                  <Text><b>Address:</b> {emp.address}</Text>
+                  <Text><b>邮箱：</b>{emp.email}</Text>
+                  <Text><b>等级：</b>{emp.level}</Text>
+                  <Text><b>社保号：</b>{emp.sin}</Text>
+                  <Text><b>出生日期：</b>{dayjs(emp.dob).format('YYYY-MM-DD')}</Text>
+                  <Text><b>住址：</b>{emp.address}</Text>
 
                   {isEditing ? (
                     <>
                       <TextInput
-                        label="Base Rate (Norm)"
+                        label="基础时薪（普通）"
                         type="number"
                         step="0.01"
                         value={form.baseRate}
@@ -139,14 +138,14 @@ export default function EmployeeManagementPage() {
                       {emp.level === 'II' && (
                         <>
                           <TextInput
-                            label="Base Rate With Tips"
+                            label="含小费基础时薪"
                             type="number"
                             step="0.01"
                             value={form.baseRateWithTips}
                             onChange={(e) => handleChange(emp.id, 'baseRateWithTips', e.currentTarget.value)}
                           />
                           <TextInput
-                            label="Tip Rate"
+                            label="小费提成倍率"
                             type="number"
                             step="0.01"
                             value={form.tipRate}
@@ -156,24 +155,24 @@ export default function EmployeeManagementPage() {
                       )}
                       <Group mt="sm">
                         <Button color="green" onClick={() => handleSave(emp.id)}>
-                          Save
+                          保存
                         </Button>
                         <Button variant="outline" color="red" onClick={() => setEditingId(null)}>
-                          Cancel
+                          取消
                         </Button>
                       </Group>
                     </>
                   ) : (
                     <>
-                      <Text><b>Base Rate:</b> ${emp.baseRate?.toFixed(2)}</Text>
+                      <Text><b>基础时薪：</b>${emp.baseRate?.toFixed(2)}</Text>
                       {emp.level === 'II' && (
                         <>
-                          <Text><b>Base With Tips:</b> ${emp.baseRateWithTips?.toFixed(2)}</Text>
-                          <Text><b>Tip Rate:</b> ×{emp.tipRate}</Text>
+                          <Text><b>含小费基础时薪：</b>${emp.baseRateWithTips?.toFixed(2)}</Text>
+                          <Text><b>小费提成倍率：</b>×{emp.tipRate}</Text>
                         </>
                       )}
                       <Button variant="light" onClick={() => setEditingId(emp.id)}>
-                        Edit Salary Info
+                        编辑工资信息
                       </Button>
                     </>
                   )}

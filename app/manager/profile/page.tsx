@@ -14,8 +14,8 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@/lib/UserContext'
 import { useRouter } from 'next/navigation'
 import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc' // ✅ import
-dayjs.extend(utc) // ✅ activate UTC plugin
+import utc from 'dayjs/plugin/utc'
+dayjs.extend(utc)
 
 export default function ManagerProfilePage() {
   const user = useUser()
@@ -64,7 +64,7 @@ export default function ManagerProfilePage() {
         username: form.username,
         address: form.address,
         sin: form.sin,
-        dob: new Date(`${form.dob}T00:00:00.000Z`), // Force UTC midnight
+        dob: new Date(`${form.dob}T00:00:00.000Z`),
       }),
     })
     setIsEditing(false)
@@ -75,49 +75,49 @@ export default function ManagerProfilePage() {
 
   return (
     <Container size="sm" mt="xl">
-      <Title order={2} mb="md">My Profile</Title>
+      <Title order={2} mb="md">我的资料</Title>
       <Paper withBorder p="md">
         <Stack>
-          <Text><b>Email:</b> {profile.email}</Text>
-          <Text><b>Role:</b> {profile.role}</Text>
-          <Text><b>Restaurant:</b> {profile.restaurant?.name || 'N/A'}</Text>
+          <Text><b>邮箱：</b>{profile.email}</Text>
+          <Text><b>类型：</b> {profile.role}</Text>
+          <Text><b>所属餐厅：</b>{profile.restaurant?.name || '无'}</Text>
 
           {isEditing ? (
             <>
               <TextInput
-                label="Username"
+                label="用户名"
                 value={form.username}
                 onChange={(e) => handleChange('username', e.currentTarget.value)}
               />
               <TextInput
-                label="SIN"
+                label="社保号（SIN）"
                 value={form.sin}
                 onChange={(e) => handleChange('sin', e.currentTarget.value)}
               />
               <TextInput
-                label="Date of Birth"
+                label="出生日期"
                 type="date"
                 value={form.dob}
                 onChange={(e) => handleChange('dob', e.currentTarget.value)}
               />
               <TextInput
-                label="Address"
+                label="住址"
                 value={form.address}
                 onChange={(e) => handleChange('address', e.currentTarget.value)}
               />
               <Group mt="sm">
-                <Button color="green" onClick={handleSave}>Save</Button>
-                <Button variant="outline" color="red" onClick={() => setIsEditing(false)}>Cancel</Button>
+                <Button color="green" onClick={handleSave}>保存</Button>
+                <Button variant="outline" color="red" onClick={() => setIsEditing(false)}>取消</Button>
               </Group>
             </>
           ) : (
             <>
-              <Text><b>Username:</b> {profile.username}</Text>
-              <Text><b>SIN:</b> {profile.sin}</Text>
-              <Text><b>DOB:</b> {dayjs(profile.dob).utc().format('YYYY-MM-DD')}</Text>
-              <Text><b>Address:</b> {profile.address}</Text>
+              <Text><b>用户名：</b>{profile.username}</Text>
+              <Text><b>社保号：</b>{profile.sin}</Text>
+              <Text><b>出生日期：</b>{dayjs(profile.dob).utc().format('YYYY-MM-DD')}</Text>
+              <Text><b>住址：</b>{profile.address}</Text>
               <Button mt="sm" variant="light" onClick={() => setIsEditing(true)}>
-                Edit
+                编辑
               </Button>
             </>
           )}
