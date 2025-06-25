@@ -125,7 +125,7 @@ export default function ManagerDashboardPage() {
 
 
               <ScrollArea>
-                <Table mt="sm" highlightOnHover withColumnBorders>
+                <Table mt="sm" highlightOnHover withColumnBorders style={{ alignItems: 'center', textAlign: 'center' }}>
                   <thead>
                     <tr>
                       <th>姓名</th>

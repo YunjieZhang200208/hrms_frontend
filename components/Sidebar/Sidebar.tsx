@@ -9,7 +9,16 @@ import {
   IconBuildingStore,
   IconPlus,
 } from '@tabler/icons-react'
-import { Center, Stack, Tooltip, UnstyledButton } from '@mantine/core'
+import {
+  Center,
+  Stack,
+  Tooltip,
+  UnstyledButton,
+  Group,
+  Box,
+  rem,
+} from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import classes from './NavbarMinimal.module.css'
 
 interface NavItem {
@@ -19,7 +28,7 @@ interface NavItem {
 }
 
 interface SidebarProps {
-  userRole: 'employee' | 'manager';
+  userRole: 'employee' | 'manager'
 }
 
 function NavbarLink({
@@ -27,13 +36,18 @@ function NavbarLink({
   label,
   active,
   onClick,
-}: NavItem & { active: boolean; onClick: () => void }) {
+  isMobile = false,
+}: NavItem & { active: boolean; onClick: () => void; isMobile?: boolean }) {
   return (
-    <Tooltip label={label} position="right">
+    <Tooltip label={label} position={isMobile ? 'top' : 'right'}>
       <UnstyledButton
         className={classes.link}
         data-active={active || undefined}
         onClick={onClick}
+        style={{
+          width: rem(50),
+          height: rem(50),
+        }}
       >
         <Icon size={20} stroke={1.5} />
       </UnstyledButton>
@@ -44,6 +58,7 @@ function NavbarLink({
 export default function Sidebar({ userRole }: SidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const isMobile = useMediaQuery('(max-width: 768px)')
 
   const items: NavItem[] =
     userRole === 'manager'
@@ -59,9 +74,40 @@ export default function Sidebar({ userRole }: SidebarProps) {
         ]
       : [
           { icon: IconPlus, label: 'New Shift', path: '/employee/new-shift' },
-          // { icon: IconGauge, label: 'Dashboard', path: '/employee/dashboard' },
           { icon: IconUser, label: 'Profile', path: '/employee/profile' },
-        ];
+        ]
+
+  const navLinks = items.map((item) => (
+    <NavbarLink
+      key={item.path}
+      {...item}
+      isMobile={isMobile}
+      active={pathname === item.path}
+      onClick={() => router.push(item.path)}
+    />
+  ))
+
+  const logoutLink = (
+    <NavbarLink
+      icon={IconLogout}
+      label="Logout"
+      path="/logout"
+      active={false}
+      onClick={() => router.push('/logout')}
+      isMobile={isMobile}
+    />
+  )
+
+  if (isMobile) {
+    return (
+      <Box className={classes.bottomNav}>
+        <Group justify="space-around" w="100%">
+          {navLinks}
+          {logoutLink}
+        </Group>
+      </Box>
+    )
+  }
 
   return (
     <nav className={classes.navbar}>
@@ -69,23 +115,10 @@ export default function Sidebar({ userRole }: SidebarProps) {
         <IconCalendarStats size={30} />
       </Center>
       <Stack justify="center" gap={0}>
-        {items.map((item) => (
-          <NavbarLink
-            key={item.path}
-            {...item}
-            active={pathname === item.path}
-            onClick={() => router.push(item.path)}
-          />
-        ))}
+        {navLinks}
       </Stack>
       <Stack justify="center" gap={0} mt="auto">
-        <NavbarLink
-          icon={IconLogout}
-          label="Logout"
-          path="/logout"
-          active={false}
-          onClick={() => router.push('/logout')}
-        />
+        {logoutLink}
       </Stack>
     </nav>
   )

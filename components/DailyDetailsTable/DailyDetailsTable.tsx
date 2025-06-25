@@ -79,7 +79,7 @@ export default function DailyDetailsTable({ data }: { data: any }) {
       </Group>
 
       <ScrollArea>
-        <Table mt="md" highlightOnHover>
+        <Table mt="md" highlightOnHover style={{ alignItems: 'center', textAlign: 'center' }}>
           <thead>
             <tr>
               <th>日期</th>

@@ -1,14 +1,14 @@
-import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
-import { Welcome } from '../components/Welcome/Welcome';
+'use client';
 
-// import { AuthenticationForm } from "@/components/Auth/AuthenticationForm";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
-  return (
-    <>
-      {/* <AuthenticationForm /> */}
-      <Welcome />
-      <ColorSchemeToggle />
-    </>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/login'); // Replace '/' with '/login'
+  }, [router]);
+
+  return null; // Optionally show a loading spinner here
 }

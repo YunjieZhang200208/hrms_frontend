@@ -22,7 +22,7 @@ export function DailySummaryTables({
       {Object.keys(levelI).length > 0 && (
         <Card withBorder mt="md">
           <Title order={5}>🧑‍🏭 Level I 员工</Title>
-          <Table mt="sm" highlightOnHover>
+          <Table mt="sm" highlightOnHover style={{ alignItems: 'center', textAlign: 'center' }}>
             <thead>
               <tr>
                 <th>员工</th>
@@ -44,7 +44,7 @@ export function DailySummaryTables({
       {Object.keys(levelII).length > 0 && (
         <Card withBorder mt="md">
           <Title order={5}>🧑‍💼 Level II 员工</Title>
-          <Table mt="sm" highlightOnHover>
+          <Table mt="sm" highlightOnHover style={{ alignItems: 'center', textAlign: 'center' }}>
             <thead>
               <tr>
                 <th>员工</th>
